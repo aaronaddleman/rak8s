@@ -42,6 +42,17 @@ Also, it's cheaper than a year of GKE. Plus, why not run Kubernetes in your home
     * If you are going to login to one of the Raspberry Pis to interact with the cluster `kubectl` is installed and configured by default on the master Kubernetes master.
     * If you are administering the cluster from a remote machine (your laptop, desktop, server, bastion host, etc.) `kubectl` will not be installed on the remote machine but it will be configured to interact with the newly built cluster once `kubectl` is installed.
 
+### Formatting of SD cards
+
+```shell
+# install package if not already
+sudo pacman -S extfat-util
+# format disk
+mkfs.extfat /dev/sde
+# copy custom image with progress indicator
+(pv -n /data/raspimg.img | dd of=/dev/sde bs=4096 conv=notrunc,noerror) 2>&1 | dialog --gauge "Copying raspian to sd in /dev/sde" 10 70 0
+```
+
 ### Recommendations
 
 * Setup SSH key pairs so your password is not required every time Ansible runs
