@@ -33,15 +33,13 @@
   when: kubeadm_reset is succeeded
   register: kubeadm_join
 
-## Commented out
-## Reason: CrashLookBackOff error
-# - name: Install Flannel (Networking)
-#   shell: "curl -sSL https://rawgit.com/coreos/flannel/{{ flannel_version }}/Documentation/kube-flannel.yml | kubectl create -f -"
-#   args:
-#     warn: false
+- name: Kubectl Version
+  shell: "kubectl version | base64 | tr -d '\n'"
+  register: kubectl_version_base64
 
 - name: Download Weave (Networking)
-  shell: "curl --location -o /tmp/weave-cni.yaml 'https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE=192.168.86.0/16'"
+  shell: "curl --location -o /tmp/weave-cni.yaml 'https://cloud.weave.works/k8s/net?k8s-version={{ kubectl_version_base64 }}&env.IPALLOC_RANGE=192.168.86.0/16'"
+  when: kubectl_version_base64 is succeeded
 
 - name: Apply weavenet
   shell: kubectl apply -f /tmp/weave-cni.yaml
