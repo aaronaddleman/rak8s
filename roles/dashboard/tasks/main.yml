@@ -1,10 +1,4 @@
 ---
 # tasks file for dashboard
 - name: Install k8s Dashboard
-  shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended.yaml
-
-- name: Fetch kubeconfig file
-  fetch:
-    src: /root/.kube/config
-    dest: ~/.kube/config
-    flat: yes
+  shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
