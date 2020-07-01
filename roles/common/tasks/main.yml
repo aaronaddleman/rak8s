@@ -39,33 +39,44 @@
     group: root
     mode: 0755
   register: cmdline
+  when: ansible_distribution == 'Raspian'
   tags:
     - boot
 
-# - name: Create a directory if it does not exist
-#   file:
-#     path: /etc/docker
-#     state: directory
-#     mode: '0755'
+- name: Create a directory if it does not exist
+  file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+  when: ansible_distribution == 'Ubuntu'
 
-# - name: Setting docker daemon.json
-#   copy:
-#     src: daemon.json
-#     dest: /etc/docker/daemon.json
-#     owner: root
-#     group: root
-#     mode: 0755
-#   register: dockerdaemon
-#   tags:
-#     - dockerdaemon
+- name: Setting docker daemon.json
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0755
+  register: dockerdaemon
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - dockerdaemon
 
 # Doc: http://manpages.ubuntu.com/manpages/trusty/man8/dphys-swapfile.8.html
-- name: Disable Swap
+- name: Disable Swap Raspian
   lineinfile:
     path: /etc/dphys-swapfile
     regexp: '^CONF_SWAPSIZE='
     line: CONF_SWAPSIZE=0
   register: swap
+  when: ansible_distribution == 'Raspian'
+
+- name: Disable Swap Ubuntu
+  shell: "swapoff -a"
+  args:
+    warn: false
+  when: ansible_distribution == 'Ubuntu'
+
 
 - name: apt-get update
   apt:
@@ -74,6 +85,16 @@
     autoremove: 'yes'
     cache_valid_time: 86400
     upgrade: 'yes'
+  when: ansible_distribution == 'Raspian'
+
+- name: apt-get update
+  apt:
+    update_cache: 'yes'
+    autoclean: 'yes'
+    autoremove: 'yes'
+    cache_valid_time: 86400
+    upgrade: 'no'
+  when: ansible_distribution == 'Ubuntu'
 
 - name: python-apt dependency
   apt:
@@ -83,4 +104,4 @@
 - name: Reboot
   reboot:
     reboot_timeout: 120
-  when: cmdline.changed or timezone.changed or hostname.changed or swap.changed
+  when: dockerdaemon.changed or cmdline.changed or timezone.changed or hostname.changed or swap.changed
